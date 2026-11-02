@@ -1,5 +1,5 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.14.2"
 
 [[package]]
@@ -1179,6 +1179,7 @@ wheels = [
 name = "hass-energy"
 version = "0.1.0"
 source = { virtual = "." }
+default-groups = ["dev", "hass-dev"]
 
 [package.dev-dependencies]
 dev = [
@@ -1195,7 +1196,7 @@ hass-dev = [
 
 [package.metadata.requires-dev]
 dev = [
-    { name = "home-assistant-frontend", specifier = "==20260930.4" },
+    { name = "home-assistant-frontend", specifier = "==20261028.1" },
     { name = "pytest-homeassistant-custom-component", specifier = "==0.13.373" },
     { name = "ruff", specifier = "==0.17.1" },
 ]
@@ -1246,11 +1247,11 @@ wheels = [
 
 [[package]]
 name = "home-assistant-frontend"
-version = "20260930.4"
+version = "20261028.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/9d/2b/4bcfe71498eb69a4387af9db487d2718692ca695686ffd6befc407a8576e/home_assistant_frontend-20260930.4.tar.gz", hash = "sha256:269d186924e1ab9d5c3992326dac3420d7f0c78d767ee4a14abe4011f68d6b56", size = 109960553, upload-time = "2026-10-16T11:41:03.462Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/16/3c/f6b49a477ddfc98c99d11fc4d289ab0bdfbff5169dfe1cee22ba38bd90f1/home_assistant_frontend-20261028.1.tar.gz", hash = "sha256:bafba6d3e2713c3e8016aaf59cb660a6a13d66f815587a3ade61eea885edbae6", size = 116545013, upload-time = "2026-10-29T15:54:03.277Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b4/ea/2074829fb00d53061804eae66303e2900319c348b4a92f239de7a537d6dc/home_assistant_frontend-20260930.4-py3-none-any.whl", hash = "sha256:05c207fb6ce6720d1782766b54a67acdf4bab83f133a562204b972d062862fc8", size = 110732939, upload-time = "2026-10-16T11:40:56.762Z" },
+    { url = "https://files.pythonhosted.org/packages/cc/d7/6173f5623f9c0ebd33ddd429c2179ba09b9a29828b621d899152d542a6d5/home_assistant_frontend-20261028.1-py3-none-any.whl", hash = "sha256:06a9168240e58fbefe5e949f369d925652197f8159cc3b317508ca2217f76b55", size = 117382507, upload-time = "2026-10-29T15:53:57.707Z" },
 ]
 
 [[package]]

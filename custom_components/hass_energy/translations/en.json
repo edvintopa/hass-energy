@@ -1,0 +1,270 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Set up HASS Energy",
+        "description": "Pick the Nord Pool prices to plan with.",
+        "data": {
+          "nordpool_entry": "Nord Pool",
+          "nordpool_area": "Price area"
+        },
+        "data_description": {
+          "nordpool_entry": "The Nord Pool integration that provides the prices.",
+          "nordpool_area": "One of the areas set up in that Nord Pool integration."
+        }
+      },
+      "sensors": {
+        "title": "Inverter and battery",
+        "description": "All optional. Past periods come from the lifetime energy totals where they're set, and from the power sensors otherwise; the values now come from the power sensors. The battery and prices are what the battery is planned with.",
+        "sections": {
+          "battery": {
+            "name": "Battery monitoring",
+            "data": {
+              "battery_soc": "Battery capacity (SoC)",
+              "battery_charge_power": "Battery charge power",
+              "battery_discharge_power": "Battery discharge power"
+            },
+            "data_description": {
+              "battery_soc": "The battery's state of charge in %.",
+              "battery_charge_power": "Power going into the battery.",
+              "battery_discharge_power": "Power coming out of the battery."
+            }
+          },
+          "power": {
+            "name": "Power monitoring",
+            "data": {
+              "pv_power": "PV power",
+              "load_power": "House load",
+              "grid_power": "Measured power (grid)",
+              "grid_export_power": "Grid export power"
+            },
+            "data_description": {
+              "pv_power": "Power the solar panels generate.",
+              "load_power": "Power the home uses.",
+              "grid_power": "Power drawn from the grid. A meter that goes negative while exporting can be set here alone, with no grid export power.",
+              "grid_export_power": "Power sent to the grid, if the measured power above doesn't go negative for it."
+            }
+          },
+          "energy": {
+            "name": "Lifetime energy",
+            "data": {
+              "battery_input_energy": "Battery input energy total",
+              "battery_output_energy": "Battery output energy total",
+              "solar_energy": "Total solar energy",
+              "grid_import_energy": "Grid import total",
+              "grid_export_energy": "Grid export total",
+              "load_energy": "Total load energy"
+            },
+            "data_description": {
+              "battery_input_energy": "Ever-increasing kWh into the battery.",
+              "battery_output_energy": "Ever-increasing kWh out of the battery.",
+              "solar_energy": "Ever-increasing kWh from the solar panels.",
+              "grid_import_energy": "Ever-increasing kWh drawn from the grid.",
+              "grid_export_energy": "Ever-increasing kWh sent to the grid.",
+              "load_energy": "Ever-increasing kWh the home used."
+            }
+          },
+          "battery_settings": {
+            "name": "Battery",
+            "data": {
+              "battery_capacity": "Capacity",
+              "battery_min_soc": "Lowest charge",
+              "battery_max_soc": "Highest charge",
+              "battery_max_charge": "Maximum charge power",
+              "battery_max_discharge": "Maximum discharge power",
+              "battery_efficiency": "Round-trip efficiency",
+              "battery_wear_cost": "Wear cost"
+            },
+            "data_description": {
+              "battery_capacity": "How much energy the battery holds when full. The battery is only planned once this and both maximum powers are set.",
+              "battery_min_soc": "The plan never takes the battery below this. 10 % when not set.",
+              "battery_max_soc": "The plan never charges the battery above this. 100 % when not set.",
+              "battery_max_charge": "The most power the battery takes in.",
+              "battery_max_discharge": "The most power the battery gives out.",
+              "battery_efficiency": "The share of the energy put in that comes back out. 90 % when not set.",
+              "battery_wear_cost": "What wearing the battery costs per kWh charged, in the Nord Pool currency, so it isn't cycled for tiny savings. 0 when not set."
+            }
+          },
+          "prices": {
+            "name": "Prices",
+            "data": {
+              "import_fee": "Import fee",
+              "vat": "VAT",
+              "export_compensation": "Export compensation"
+            },
+            "data_description": {
+              "import_fee": "Added to the spot price for each kWh bought, before VAT: the supplier's markup, the grid fee and energy tax, in the Nord Pool currency. 0 when not set.",
+              "vat": "VAT on bought energy. 25 % when not set.",
+              "export_compensation": "Added to the spot price for each kWh sold, in the Nord Pool currency (negative for a fee). 0 when not set."
+            }
+          }
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "HASS Energy is already set up.",
+      "nordpool_missing": "Set up the Nord Pool integration first."
+    },
+    "error": {
+      "area_not_in_entry": "This area isn't set up in the chosen Nord Pool integration.",
+      "battery_incomplete": "Set the battery's capacity and both maximum powers, or none of them: the battery is only planned with all three.",
+      "soc_range": "The battery's lowest charge must be below its highest."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Inverter and battery",
+        "description": "All optional. Past periods come from the lifetime energy totals where they're set, and from the power sensors otherwise; the values now come from the power sensors. The battery and prices are what the battery is planned with.",
+        "sections": {
+          "battery": {
+            "name": "Battery monitoring",
+            "data": {
+              "battery_soc": "Battery capacity (SoC)",
+              "battery_charge_power": "Battery charge power",
+              "battery_discharge_power": "Battery discharge power"
+            },
+            "data_description": {
+              "battery_soc": "The battery's state of charge in %.",
+              "battery_charge_power": "Power going into the battery.",
+              "battery_discharge_power": "Power coming out of the battery."
+            }
+          },
+          "power": {
+            "name": "Power monitoring",
+            "data": {
+              "pv_power": "PV power",
+              "load_power": "House load",
+              "grid_power": "Measured power (grid)",
+              "grid_export_power": "Grid export power"
+            },
+            "data_description": {
+              "pv_power": "Power the solar panels generate.",
+              "load_power": "Power the home uses.",
+              "grid_power": "Power drawn from the grid. A meter that goes negative while exporting can be set here alone, with no grid export power.",
+              "grid_export_power": "Power sent to the grid, if the measured power above doesn't go negative for it."
+            }
+          },
+          "energy": {
+            "name": "Lifetime energy",
+            "data": {
+              "battery_input_energy": "Battery input energy total",
+              "battery_output_energy": "Battery output energy total",
+              "solar_energy": "Total solar energy",
+              "grid_import_energy": "Grid import total",
+              "grid_export_energy": "Grid export total",
+              "load_energy": "Total load energy"
+            },
+            "data_description": {
+              "battery_input_energy": "Ever-increasing kWh into the battery.",
+              "battery_output_energy": "Ever-increasing kWh out of the battery.",
+              "solar_energy": "Ever-increasing kWh from the solar panels.",
+              "grid_import_energy": "Ever-increasing kWh drawn from the grid.",
+              "grid_export_energy": "Ever-increasing kWh sent to the grid.",
+              "load_energy": "Ever-increasing kWh the home used."
+            }
+          },
+          "battery_settings": {
+            "name": "Battery",
+            "data": {
+              "battery_capacity": "Capacity",
+              "battery_min_soc": "Lowest charge",
+              "battery_max_soc": "Highest charge",
+              "battery_max_charge": "Maximum charge power",
+              "battery_max_discharge": "Maximum discharge power",
+              "battery_efficiency": "Round-trip efficiency",
+              "battery_wear_cost": "Wear cost"
+            },
+            "data_description": {
+              "battery_capacity": "How much energy the battery holds when full. The battery is only planned once this and both maximum powers are set.",
+              "battery_min_soc": "The plan never takes the battery below this. 10 % when not set.",
+              "battery_max_soc": "The plan never charges the battery above this. 100 % when not set.",
+              "battery_max_charge": "The most power the battery takes in.",
+              "battery_max_discharge": "The most power the battery gives out.",
+              "battery_efficiency": "The share of the energy put in that comes back out. 90 % when not set.",
+              "battery_wear_cost": "What wearing the battery costs per kWh charged, in the Nord Pool currency, so it isn't cycled for tiny savings. 0 when not set."
+            }
+          },
+          "prices": {
+            "name": "Prices",
+            "data": {
+              "import_fee": "Import fee",
+              "vat": "VAT",
+              "export_compensation": "Export compensation"
+            },
+            "data_description": {
+              "import_fee": "Added to the spot price for each kWh bought, before VAT: the supplier's markup, the grid fee and energy tax, in the Nord Pool currency. 0 when not set.",
+              "vat": "VAT on bought energy. 25 % when not set.",
+              "export_compensation": "Added to the spot price for each kWh sold, in the Nord Pool currency (negative for a fee). 0 when not set."
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "battery_incomplete": "Set the battery's capacity and both maximum powers, or none of them: the battery is only planned with all three.",
+      "soc_range": "The battery's lowest charge must be below its highest."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "average_consumption": {
+        "name": "Average consumption (10 days)"
+      }
+    }
+  },
+  "common": {
+    "panel_title": "HASS Energy",
+    "panel_card_title": "Electricity price {area}",
+    "panel_no_prices": "No prices yet.",
+    "panel_prices_error": "Couldn't load prices.",
+    "panel_price_unit": "{currency}/kWh",
+    "energy_chart_now": "Now",
+    "price_line_label": "Electricity price",
+    "price_line_price": "Price",
+    "price_line_price_at": "Price {period}",
+    "price_line_no_value": "–",
+    "solar_line_label": "Solar generation",
+    "solar_line_name": "Solar",
+    "solar_line_power_unit": "kW",
+    "solar_line_no_value": "–",
+    "battery_line_label": "Battery power",
+    "battery_line_name": "Battery",
+    "battery_line_charging": "Charging",
+    "battery_line_discharging": "Discharging",
+    "battery_line_idle": "Battery idle",
+    "battery_line_power_unit": "kW",
+    "battery_line_no_value": "–",
+    "grid_line_label": "Grid power",
+    "grid_line_name": "Grid",
+    "grid_line_importing": "Importing",
+    "grid_line_exporting": "Exporting",
+    "grid_line_idle": "Grid idle",
+    "grid_line_power_unit": "kW",
+    "grid_line_no_value": "–",
+    "home_line_label": "Home power",
+    "home_line_name": "Home",
+    "home_line_power_unit": "kW",
+    "home_line_no_value": "–",
+    "soc_line_label": "Battery state of charge",
+    "soc_line_name": "Battery charge",
+    "soc_line_unit": "%",
+    "soc_line_no_value": "–",
+    "plan_strip_label": "Battery plan",
+    "plan_strip_described": "Battery plan: {runs}",
+    "plan_strip_run": "{activity} {period}",
+    "plan_strip_activity_grid_charge": "Grid charging",
+    "plan_strip_activity_solar_charge": "Solar charging",
+    "plan_strip_activity_discharge": "Powering home",
+    "plan_strip_activity_export": "Exporting",
+    "plan_strip_activity_hold": "Hold",
+    "plan_strip_activity_idle": "Idle",
+    "timeline_today": "Today",
+    "timeline_tomorrow": "Tomorrow"
+  },
+  "exceptions": {
+    "nordpool_not_configured": {
+      "message": "Remove and re-add HASS Energy to pick the Nord Pool prices to use."
+    }
+  }
+}

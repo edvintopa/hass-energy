@@ -1,0 +1,21 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Dev Home Assistant instance (only configuration.yaml is tracked)
+config/*
+!config/configuration.yaml
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/
+
+# Claude Code personal settings
+.claude/settings.local.json

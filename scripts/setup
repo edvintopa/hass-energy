@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+# Install the dev environment (Python + Home Assistant + test tooling).
+set -euo pipefail
+cd "$(dirname "$0")/.."
+uv sync

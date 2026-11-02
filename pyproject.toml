@@ -1,0 +1,67 @@
+[project]
+name = "hass-energy"
+version = "0.1.0"
+description = "Home Assistant integration that plans battery usage from Nordpool prices and PV forecasts."
+readme = "README.md"
+requires-python = ">=3.14.2"
+dependencies = []
+
+[dependency-groups]
+dev = [
+    # Pins the matching homeassistant release (currently 2026.10.2).
+    "pytest-homeassistant-custom-component==0.13.373",
+    # The panel depends on frontend, which tests set up. Match the version in
+    # homeassistant/components/frontend/manifest.json for the pinned release.
+    "home-assistant-frontend==20260930.4",
+    "ruff==0.17.1",
+]
+# Extra packages for running a local dev instance (scripts/develop). Installed by
+# default locally so `uv run` doesn't remove them; CI skips them with --no-group.
+# These are requirements of core integrations loaded by default_config.
+hass-dev = [
+    "pymicro-vad==1.0.1",
+    "pyspeex-noise==1.0.2",
+]
+
+[tool.uv]
+package = false
+# uv's own arm64 Python builds; the python.org macOS build forces universal2
+# compiler flags, which breaks building C extensions HA needs locally.
+python-preference = "only-managed"
+default-groups = ["dev", "hass-dev"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+addopts = "--cov=custom_components.hass_energy --cov-report=term-missing"
+
+[tool.coverage.run]
+branch = true
+
+[tool.ruff]
+target-version = "py314"
+line-length = 88
+
+[tool.ruff.lint]
+select = [
+    "ASYNC", # flake8-async
+    "B",     # bugbear
+    "C4",    # comprehensions
+    "DTZ",   # naive datetimes
+    "E",     # pycodestyle
+    "F",     # pyflakes
+    "I",     # isort
+    "PERF",  # perflint
+    "PT",    # pytest style
+    "RUF",   # ruff-specific
+    "SIM",   # simplify
+    "UP",    # pyupgrade
+    "W",     # pycodestyle warnings
+]
+
+[tool.ruff.lint.isort]
+force-sort-within-sections = true
+known-first-party = ["custom_components.hass_energy"]
+combine-as-imports = true

@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# Run a local Home Assistant on http://localhost:8123 with this integration loaded.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+mkdir -p config
+# Expose the integration to the dev instance without copying it. Other custom
+# integrations (e.g. Remote Home Assistant) sit next to it, outside the repo.
+[ -L config/custom_components ] && rm config/custom_components
+mkdir -p config/custom_components
+ln -sfn ../../custom_components/hass_energy config/custom_components/hass_energy
+
+uv run hass --config "${PWD}/config" --debug

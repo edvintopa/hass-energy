@@ -1,0 +1,15 @@
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+    ignore:
+      # hass-dev pins must match what the pinned Home Assistant release requires
+      # (assist_pipeline's manifest), so they only move with HA itself.
+      - dependency-name: pymicro-vad
+      - dependency-name: pyspeex-noise

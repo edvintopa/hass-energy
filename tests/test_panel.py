@@ -7,6 +7,7 @@ from unittest.mock import patch
 from homeassistant.components.frontend import DATA_PANELS
 from homeassistant.config_entries import ConfigEntryState
 from homeassistant.core import HomeAssistant
+import pytest
 from pytest_homeassistant_custom_component.typing import (
     ClientSessionGenerator,
     WebSocketGenerator,
@@ -77,17 +78,24 @@ async def test_panel_kept_when_unload_fails(hass: HomeAssistant) -> None:
     assert entry.state is ConfigEntryState.NOT_LOADED
 
 
+@pytest.mark.parametrize(
+    ("language", "price", "today"), [("en", "Price", "Today"), ("sv", "Pris", "Idag")]
+)
 async def test_panel_translations(
-    hass: HomeAssistant, hass_ws_client: WebSocketGenerator
+    hass: HomeAssistant,
+    hass_ws_client: WebSocketGenerator,
+    language: str,
+    price: str,
+    today: str,
 ) -> None:
-    """The panel's strings load through the frontend's translations API."""
+    """The panel's strings load in the user's language."""
     await async_setup_integration(hass)
     client = await hass_ws_client(hass)
 
     await client.send_json_auto_id(
         {
             "type": "frontend/get_translations",
-            "language": "en",
+            "language": language,
             "category": "common",
             "integration": ["hass_energy"],
         }
@@ -95,8 +103,9 @@ async def test_panel_translations(
     response = await client.receive_json()
 
     resources = response["result"]["resources"]
-    assert resources["component.hass_energy.common.price_line_price"] == "Price"
+    assert resources["component.hass_energy.common.price_line_price"] == price
     assert (
         resources["component.hass_energy.common.price_line_price_at"]
-        == "Price {period}"
+        == f"{price} {{period}}"
     )
+    assert resources["component.hass_energy.common.timeline_today"] == today

@@ -1,0 +1,270 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Konfigurera HASS Energy",
+        "description": "Välj de Nord Pool-priser som ska planeras efter.",
+        "data": {
+          "nordpool_entry": "Nord Pool",
+          "nordpool_area": "Prisområde"
+        },
+        "data_description": {
+          "nordpool_entry": "Nord Pool-integrationen som ger priserna.",
+          "nordpool_area": "Ett av områdena som är konfigurerade i den Nord Pool-integrationen."
+        }
+      },
+      "sensors": {
+        "title": "Växelriktare och batteri",
+        "description": "Allt är valfritt. Tidigare perioder hämtas från de totala energimätarna där de är angivna och annars från effektsensorerna; värdena just nu kommer från effektsensorerna. Batteriet och priserna är det som batteriet planeras efter.",
+        "sections": {
+          "battery": {
+            "name": "Batteriövervakning",
+            "data": {
+              "battery_soc": "Batteriets laddnivå (SoC)",
+              "battery_charge_power": "Batteriets laddeffekt",
+              "battery_discharge_power": "Batteriets urladdningseffekt"
+            },
+            "data_description": {
+              "battery_soc": "Batteriets laddnivå i %.",
+              "battery_charge_power": "Effekt som går in i batteriet.",
+              "battery_discharge_power": "Effekt som kommer ut ur batteriet."
+            }
+          },
+          "power": {
+            "name": "Effektövervakning",
+            "data": {
+              "pv_power": "Soleffekt",
+              "load_power": "Husets förbrukning",
+              "grid_power": "Uppmätt effekt (elnät)",
+              "grid_export_power": "Effekt till elnätet"
+            },
+            "data_description": {
+              "pv_power": "Effekt som solpanelerna producerar.",
+              "load_power": "Effekt som hemmet förbrukar.",
+              "grid_power": "Effekt som köps från elnätet. En mätare som blir negativ vid försäljning kan anges här ensam, utan effekt till elnätet.",
+              "grid_export_power": "Effekt som säljs till elnätet, om den uppmätta effekten ovan inte blir negativ för den."
+            }
+          },
+          "energy": {
+            "name": "Total energi",
+            "data": {
+              "battery_input_energy": "Total energi in i batteriet",
+              "battery_output_energy": "Total energi ut ur batteriet",
+              "solar_energy": "Total solenergi",
+              "grid_import_energy": "Totalt köpt från elnätet",
+              "grid_export_energy": "Totalt sålt till elnätet",
+              "load_energy": "Total förbrukning"
+            },
+            "data_description": {
+              "battery_input_energy": "Ständigt ökande kWh in i batteriet.",
+              "battery_output_energy": "Ständigt ökande kWh ut ur batteriet.",
+              "solar_energy": "Ständigt ökande kWh från solpanelerna.",
+              "grid_import_energy": "Ständigt ökande kWh köpt från elnätet.",
+              "grid_export_energy": "Ständigt ökande kWh sålt till elnätet.",
+              "load_energy": "Ständigt ökande kWh som hemmet förbrukat."
+            }
+          },
+          "battery_settings": {
+            "name": "Batteri",
+            "data": {
+              "battery_capacity": "Kapacitet",
+              "battery_min_soc": "Lägsta laddnivå",
+              "battery_max_soc": "Högsta laddnivå",
+              "battery_max_charge": "Högsta laddeffekt",
+              "battery_max_discharge": "Högsta urladdningseffekt",
+              "battery_efficiency": "Verkningsgrad (tur och retur)",
+              "battery_wear_cost": "Slitagekostnad"
+            },
+            "data_description": {
+              "battery_capacity": "Hur mycket energi batteriet rymmer när det är fullt. Batteriet planeras först när denna och båda högsta effekterna är angivna.",
+              "battery_min_soc": "Planen tar aldrig batteriet under denna nivå. 10 % om inget anges.",
+              "battery_max_soc": "Planen laddar aldrig batteriet över denna nivå. 100 % om inget anges.",
+              "battery_max_charge": "Den högsta effekt batteriet tar emot.",
+              "battery_max_discharge": "Den högsta effekt batteriet ger ut.",
+              "battery_efficiency": "Andelen av den inladdade energin som kommer tillbaka ut. 90 % om inget anges.",
+              "battery_wear_cost": "Vad slitaget på batteriet kostar per laddad kWh, i Nord Pool-valutan, så att det inte cyklas för små besparingar. 0 om inget anges."
+            }
+          },
+          "prices": {
+            "name": "Priser",
+            "data": {
+              "import_fee": "Påslag vid köp",
+              "vat": "Moms",
+              "export_compensation": "Ersättning vid försäljning"
+            },
+            "data_description": {
+              "import_fee": "Läggs till spotpriset för varje köpt kWh, före moms: elhandlarens påslag, elnätsavgiften och energiskatten, i Nord Pool-valutan. 0 om inget anges.",
+              "vat": "Moms på köpt energi. 25 % om inget anges.",
+              "export_compensation": "Läggs till spotpriset för varje såld kWh, i Nord Pool-valutan (negativ för en avgift). 0 om inget anges."
+            }
+          }
+        }
+      }
+    },
+    "abort": {
+      "single_instance_allowed": "HASS Energy är redan konfigurerat.",
+      "nordpool_missing": "Konfigurera Nord Pool-integrationen först."
+    },
+    "error": {
+      "area_not_in_entry": "Det här området är inte konfigurerat i den valda Nord Pool-integrationen.",
+      "battery_incomplete": "Ange batteriets kapacitet och båda högsta effekterna, eller ingen av dem: batteriet planeras bara med alla tre.",
+      "soc_range": "Batteriets lägsta laddnivå måste vara under den högsta."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Växelriktare och batteri",
+        "description": "Allt är valfritt. Tidigare perioder hämtas från de totala energimätarna där de är angivna och annars från effektsensorerna; värdena just nu kommer från effektsensorerna. Batteriet och priserna är det som batteriet planeras efter.",
+        "sections": {
+          "battery": {
+            "name": "Batteriövervakning",
+            "data": {
+              "battery_soc": "Batteriets laddnivå (SoC)",
+              "battery_charge_power": "Batteriets laddeffekt",
+              "battery_discharge_power": "Batteriets urladdningseffekt"
+            },
+            "data_description": {
+              "battery_soc": "Batteriets laddnivå i %.",
+              "battery_charge_power": "Effekt som går in i batteriet.",
+              "battery_discharge_power": "Effekt som kommer ut ur batteriet."
+            }
+          },
+          "power": {
+            "name": "Effektövervakning",
+            "data": {
+              "pv_power": "Soleffekt",
+              "load_power": "Husets förbrukning",
+              "grid_power": "Uppmätt effekt (elnät)",
+              "grid_export_power": "Effekt till elnätet"
+            },
+            "data_description": {
+              "pv_power": "Effekt som solpanelerna producerar.",
+              "load_power": "Effekt som hemmet förbrukar.",
+              "grid_power": "Effekt som köps från elnätet. En mätare som blir negativ vid försäljning kan anges här ensam, utan effekt till elnätet.",
+              "grid_export_power": "Effekt som säljs till elnätet, om den uppmätta effekten ovan inte blir negativ för den."
+            }
+          },
+          "energy": {
+            "name": "Total energi",
+            "data": {
+              "battery_input_energy": "Total energi in i batteriet",
+              "battery_output_energy": "Total energi ut ur batteriet",
+              "solar_energy": "Total solenergi",
+              "grid_import_energy": "Totalt köpt från elnätet",
+              "grid_export_energy": "Totalt sålt till elnätet",
+              "load_energy": "Total förbrukning"
+            },
+            "data_description": {
+              "battery_input_energy": "Ständigt ökande kWh in i batteriet.",
+              "battery_output_energy": "Ständigt ökande kWh ut ur batteriet.",
+              "solar_energy": "Ständigt ökande kWh från solpanelerna.",
+              "grid_import_energy": "Ständigt ökande kWh köpt från elnätet.",
+              "grid_export_energy": "Ständigt ökande kWh sålt till elnätet.",
+              "load_energy": "Ständigt ökande kWh som hemmet förbrukat."
+            }
+          },
+          "battery_settings": {
+            "name": "Batteri",
+            "data": {
+              "battery_capacity": "Kapacitet",
+              "battery_min_soc": "Lägsta laddnivå",
+              "battery_max_soc": "Högsta laddnivå",
+              "battery_max_charge": "Högsta laddeffekt",
+              "battery_max_discharge": "Högsta urladdningseffekt",
+              "battery_efficiency": "Verkningsgrad (tur och retur)",
+              "battery_wear_cost": "Slitagekostnad"
+            },
+            "data_description": {
+              "battery_capacity": "Hur mycket energi batteriet rymmer när det är fullt. Batteriet planeras först när denna och båda högsta effekterna är angivna.",
+              "battery_min_soc": "Planen tar aldrig batteriet under denna nivå. 10 % om inget anges.",
+              "battery_max_soc": "Planen laddar aldrig batteriet över denna nivå. 100 % om inget anges.",
+              "battery_max_charge": "Den högsta effekt batteriet tar emot.",
+              "battery_max_discharge": "Den högsta effekt batteriet ger ut.",
+              "battery_efficiency": "Andelen av den inladdade energin som kommer tillbaka ut. 90 % om inget anges.",
+              "battery_wear_cost": "Vad slitaget på batteriet kostar per laddad kWh, i Nord Pool-valutan, så att det inte cyklas för små besparingar. 0 om inget anges."
+            }
+          },
+          "prices": {
+            "name": "Priser",
+            "data": {
+              "import_fee": "Påslag vid köp",
+              "vat": "Moms",
+              "export_compensation": "Ersättning vid försäljning"
+            },
+            "data_description": {
+              "import_fee": "Läggs till spotpriset för varje köpt kWh, före moms: elhandlarens påslag, elnätsavgiften och energiskatten, i Nord Pool-valutan. 0 om inget anges.",
+              "vat": "Moms på köpt energi. 25 % om inget anges.",
+              "export_compensation": "Läggs till spotpriset för varje såld kWh, i Nord Pool-valutan (negativ för en avgift). 0 om inget anges."
+            }
+          }
+        }
+      }
+    },
+    "error": {
+      "battery_incomplete": "Ange batteriets kapacitet och båda högsta effekterna, eller ingen av dem: batteriet planeras bara med alla tre.",
+      "soc_range": "Batteriets lägsta laddnivå måste vara under den högsta."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "average_consumption": {
+        "name": "Genomsnittlig förbrukning (10 dagar)"
+      }
+    }
+  },
+  "common": {
+    "panel_title": "HASS Energy",
+    "panel_card_title": "Elpris {area}",
+    "panel_no_prices": "Inga priser ännu.",
+    "panel_prices_error": "Kunde inte hämta priserna.",
+    "panel_price_unit": "{currency}/kWh",
+    "energy_chart_now": "Nu",
+    "price_line_label": "Elpris",
+    "price_line_price": "Pris",
+    "price_line_price_at": "Pris {period}",
+    "price_line_no_value": "–",
+    "solar_line_label": "Solproduktion",
+    "solar_line_name": "Sol",
+    "solar_line_power_unit": "kW",
+    "solar_line_no_value": "–",
+    "battery_line_label": "Batterieffekt",
+    "battery_line_name": "Batteri",
+    "battery_line_charging": "Laddar",
+    "battery_line_discharging": "Laddar ur",
+    "battery_line_idle": "Batteriet vilar",
+    "battery_line_power_unit": "kW",
+    "battery_line_no_value": "–",
+    "grid_line_label": "Effekt från elnätet",
+    "grid_line_name": "Elnät",
+    "grid_line_importing": "Köper",
+    "grid_line_exporting": "Säljer",
+    "grid_line_idle": "Elnätet vilar",
+    "grid_line_power_unit": "kW",
+    "grid_line_no_value": "–",
+    "home_line_label": "Hemmets förbrukning",
+    "home_line_name": "Hemmet",
+    "home_line_power_unit": "kW",
+    "home_line_no_value": "–",
+    "soc_line_label": "Batteriets laddnivå",
+    "soc_line_name": "Laddnivå",
+    "soc_line_unit": "%",
+    "soc_line_no_value": "–",
+    "plan_strip_label": "Batteriplan",
+    "plan_strip_described": "Batteriplan: {runs}",
+    "plan_strip_run": "{activity} {period}",
+    "plan_strip_activity_grid_charge": "Laddar från nätet",
+    "plan_strip_activity_solar_charge": "Laddar med sol",
+    "plan_strip_activity_discharge": "Driver hemmet",
+    "plan_strip_activity_export": "Säljer",
+    "plan_strip_activity_hold": "Håller",
+    "plan_strip_activity_idle": "Vilar",
+    "timeline_today": "Idag",
+    "timeline_tomorrow": "Imorgon"
+  },
+  "exceptions": {
+    "nordpool_not_configured": {
+      "message": "Ta bort och lägg till HASS Energy igen för att välja vilka Nord Pool-priser som ska användas."
+    }
+  }
+}

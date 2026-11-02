@@ -44,5 +44,5 @@ The user wants a clean, scalable structure, so keep to these rules as the integr
 
 ## Conventions
 - Bump `version` in `manifest.json` for releases. Tag `v<version>` to release.
-- UI strings go in `translations/en.json`, never in code. Frontend strings live under `common`, which HA only allows flat, so each component's keys share a prefix (`panel_`, `energy_chart_`, `price_line_`, `solar_line_`, `battery_line_`, `grid_line_`, `home_line_`, `soc_line_`, `plan_strip_`, `timeline_`) and each component reads its own through a `_t(key)` helper. Times and ranges are formatted with `Intl` (e.g. `formatRange` in `timeline.js`), not by joining strings.
+- UI strings go in `translations/en.json`, never in code, and in the same keys in `translations/sv.json` (Swedish; `tests/test_translations.py` checks every language has English's keys and placeholders). Frontend strings live under `common`, which HA only allows flat, so each component's keys share a prefix (`panel_`, `energy_chart_`, `price_line_`, `solar_line_`, `battery_line_`, `grid_line_`, `home_line_`, `soc_line_`, `plan_strip_`, `timeline_`) and each component reads its own through a `_t(key)` helper. Times and ranges are formatted with `Intl` (e.g. `formatRange` in `timeline.js`), not by joining strings.
 - Keep `hacs.json` → `homeassistant` in step with the minimum HA version actually tested.

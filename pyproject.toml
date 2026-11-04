@@ -1,5 +1,6 @@
 [project]
 name = "hass-energy"
+license = "MIT"
 version = "0.1.0"
 description = "Home Assistant integration that plans battery usage from Nordpool prices and PV forecasts."
 readme = "README.md"

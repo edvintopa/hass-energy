@@ -47,7 +47,9 @@ from .const import (
     LOGGER,
     MEASURED_REFRESH_SECOND,
     PLAN_DEFAULTS,
+    PLAN_EXPIRY_SECOND,
     REFRESH_MINUTE,
+    REPLAN_CUTOFF,
     SIGNAL_DATA_UPDATED,
     SIGNAL_ENERGY_PREFS_UPDATED,
     SIGNAL_LIVE_UPDATED,
@@ -146,8 +148,10 @@ class HassEnergyCoordinator(DataUpdateCoordinator[EnergyData]):
         self._forecast_listeners: dict[
             str, tuple[DataUpdateCoordinator, CALLBACK_TYPE]
         ] = {}
-        # When the plan was last made, so it's made at most once a quarter.
+        # When a plan was last made, so it's made at most once a quarter.
         self._planned_at: datetime | None = None
+        # One plan at a time, so a plan started later is also sent later.
+        self._plan_lock = asyncio.Lock()
         # Set once the entry unloads, so refreshes still running then send
         # nothing on.
         self._unloaded = False
@@ -178,29 +182,31 @@ class HassEnergyCoordinator(DataUpdateCoordinator[EnergyData]):
         the home's consumption, or if planning fails, so the rest of the data
         still updates.
         """
-        now = dt_util.now()
-        self._planned_at = now
-        try:
-            battery = _battery(self.config_entry.options)
-            soc = _soc_now(data.measured)
-            if battery is None or soc is None or not data.consumption_by_hour:
+        async with self._plan_lock:
+            now = dt_util.now()
+            try:
+                battery = _battery(self.config_entry.options)
+                soc = _soc_now(data.measured)
+                if battery is None or soc is None or not data.consumption_by_hour:
+                    return ()
+                plan_slots = slots(
+                    data.prices,
+                    data.solar_forecast,
+                    data.consumption_by_hour,
+                    _tariff(self.config_entry.options),
+                    now,
+                    dt_util.get_default_time_zone(),
+                )
+                if not plan_slots:
+                    return ()
+                plan = await self.hass.async_add_executor_job(
+                    plan_battery, plan_slots, battery, soc
+                )
+            except Exception:  # A bug in planning mustn't stop the rest.
+                LOGGER.exception("Could not plan the battery")
                 return ()
-            plan_slots = slots(
-                data.prices,
-                data.solar_forecast,
-                data.consumption_by_hour,
-                _tariff(self.config_entry.options),
-                now,
-                dt_util.get_default_time_zone(),
-            )
-            if not plan_slots:
-                return ()
-            plan = await self.hass.async_add_executor_job(
-                plan_battery, plan_slots, battery, soc
-            )
-        except Exception:  # A bug in planning mustn't stop the rest.
-            LOGGER.exception("Could not plan the battery")
-            return ()
+            # Only now: without a plan, the next measured refresh tries again.
+            self._planned_at = now
         LOGGER.debug(
             "Planned %d periods from %.0f %% to %s, costing %.2f %s",
             len(plan),
@@ -276,6 +282,13 @@ class HassEnergyCoordinator(DataUpdateCoordinator[EnergyData]):
         async def _refresh(_now: datetime) -> None:
             await self._async_refresh_measured()
 
+        @callback
+        def _expire_plan(now: datetime) -> None:
+            # A stuck refresh mustn't leave the inverter on an old command.
+            data = self.data
+            if data is not None and data.plan and data.plan[0].end <= now:
+                self._async_set_partial_data(replace(data, plan=()))
+
         live = Debouncer(
             self.hass,
             LOGGER,
@@ -294,6 +307,12 @@ class HassEnergyCoordinator(DataUpdateCoordinator[EnergyData]):
                 _refresh,
                 minute=list(range(0, 60, 5)),
                 second=MEASURED_REFRESH_SECOND,
+            ),
+            async_track_time_change(
+                self.hass,
+                _expire_plan,
+                minute=list(range(0, 60, 15)),
+                second=PLAN_EXPIRY_SECOND,
             ),
             async_track_state_change_event(
                 self.hass, live_entities(self.config_entry.options), _changed
@@ -351,7 +370,10 @@ class HassEnergyCoordinator(DataUpdateCoordinator[EnergyData]):
             return
         start, end = _chart_range(dt_util.now())
         solar = await self._async_solar(start, end)
-        plan = await self._async_plan(replace(self.data, solar_forecast=solar))
+        now = dt_util.now()
+        plan = self.data.plan
+        if _quarter_start(now + REPLAN_CUTOFF) == _quarter_start(now):
+            plan = await self._async_plan(replace(self.data, solar_forecast=solar))
         self._async_set_partial_data(
             replace(self.data, solar_forecast=solar, plan=plan)
         )

@@ -210,6 +210,15 @@
     "sensor": {
       "average_consumption": {
         "name": "Genomsnittlig förbrukning (10 dagar)"
+      },
+      "battery_command": {
+        "name": "Batterikommando",
+        "state": {
+          "auto": "Auto",
+          "charge": "Ladda",
+          "discharge": "Ladda ur",
+          "hold": "Håll"
+        }
       }
     }
   },

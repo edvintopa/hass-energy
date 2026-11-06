@@ -210,6 +210,15 @@
     "sensor": {
       "average_consumption": {
         "name": "Average consumption (10 days)"
+      },
+      "battery_command": {
+        "name": "Battery command",
+        "state": {
+          "auto": "Auto",
+          "charge": "Charge",
+          "discharge": "Discharge",
+          "hold": "Hold"
+        }
       }
     }
   },

@@ -72,6 +72,12 @@ REFRESH_MINUTE = 15
 # It compiles 5-minute statistics just after every fifth minute; measured data
 # is re-read at this second of those minutes.
 MEASURED_REFRESH_SECOND = 30
+# At this second of each quarter's first minute, a plan that wasn't made again
+# after the measured refresh has expired, and is dropped.
+PLAN_EXPIRY_SECOND = 50
+# A forecast this close to a quarter's end waits for that quarter's replan: in
+# a slot this short, no command gains enough to beat auto.
+REPLAN_CUTOFF = timedelta(minutes=1)
 # The live values are sent at most this often while the sensors change.
 LIVE_COOLDOWN = timedelta(seconds=10)
 

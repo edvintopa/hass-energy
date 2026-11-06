@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+import asyncio
 from dataclasses import replace
 from datetime import timedelta
+import time
 from unittest.mock import patch
 
 from freezegun.api import FrozenDateTimeFactory
@@ -21,6 +23,7 @@ from custom_components.hass_energy.const import (
     CONF_PV_POWER,
     LIVE_COOLDOWN,
     MEASURED_REFRESH_SECOND,
+    PLAN_EXPIRY_SECOND,
     REFRESH_MINUTE,
     SIGNAL_DATA_UPDATED,
 )
@@ -401,6 +404,7 @@ async def test_plan_once_per_quarter(
             (10, MEASURED_REFRESH_SECOND, 0, None),
             (15, 0, 1, 1),
             (15, MEASURED_REFRESH_SECOND, 0, 1),
+            (15, PLAN_EXPIRY_SECOND, 0, 0),
             (30, MEASURED_REFRESH_SECOND, 1, 1),
         ):
             before = (planned.call_count, len(sent))
@@ -432,3 +436,67 @@ async def test_nothing_sent_after_unload(hass: HomeAssistant) -> None:
     await coordinator._async_refresh_solar()
 
     assert sent == []
+
+
+@pytest.mark.usefixtures("energy_dashboard")
+async def test_plan_retried_within_the_quarter(
+    hass: HomeAssistant, stockholm_afternoon: FrozenDateTimeFactory
+) -> None:
+    """Without a plan the next measured refresh tries again."""
+    soc = PLAN_OPTIONS[CONF_BATTERY_SOC]
+    entry = await async_setup_integration(hass, options=PLAN_OPTIONS)
+    assert entry.runtime_data.data.plan == ()
+
+    set_soc(hass, soc, 50)
+    target = dt_util.utcnow().replace(minute=5, second=MEASURED_REFRESH_SECOND)
+    stockholm_afternoon.move_to(target)
+    async_fire_time_changed(hass, target)
+    await hass.async_block_till_done(wait_background_tasks=True)
+
+    assert entry.runtime_data.data.plan
+
+
+@pytest.mark.usefixtures("energy_dashboard")
+async def test_late_forecast_waits_for_the_next_quarter(
+    hass: HomeAssistant, stockholm_afternoon: FrozenDateTimeFactory
+) -> None:
+    """A forecast just before a quarter ends keeps the plan, but is kept itself."""
+    set_soc(hass, PLAN_OPTIONS[CONF_BATTERY_SOC], 50)
+    entry = await async_setup_integration(hass, options=PLAN_OPTIONS)
+    coordinator = entry.runtime_data
+    plan = coordinator.data.plan
+
+    stockholm_afternoon.move_to(dt_util.utcnow().replace(minute=14, second=30))
+    with patch(
+        "custom_components.hass_energy.coordinator.plan_battery", wraps=plan_battery
+    ) as planned:
+        await coordinator._async_refresh_solar()
+
+    planned.assert_not_called()
+    assert coordinator.data.plan == plan
+
+
+@pytest.mark.usefixtures("energy_dashboard")
+async def test_plans_run_one_at_a_time(hass: HomeAssistant) -> None:
+    """A plan started later waits, so it can't be overwritten by an earlier one."""
+    set_soc(hass, PLAN_OPTIONS[CONF_BATTERY_SOC], 50)
+    entry = await async_setup_integration(hass, options=PLAN_OPTIONS)
+    coordinator = entry.runtime_data
+    running = 0
+    most = 0
+
+    def _plan(*args: object) -> tuple:
+        nonlocal running, most
+        running += 1
+        most = max(most, running)
+        time.sleep(0.01)
+        running -= 1
+        return ()
+
+    with patch("custom_components.hass_energy.coordinator.plan_battery", _plan):
+        await asyncio.gather(
+            coordinator._async_plan(coordinator.data),
+            coordinator._async_plan(coordinator.data),
+        )
+
+    assert most == 1

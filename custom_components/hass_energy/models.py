@@ -139,3 +139,8 @@ class EnergyData:
     measured: Measured
     # The battery plan from now on, oldest first; empty when it can't be made.
     plan: tuple[PlanPeriod, ...]
+
+    @property
+    def command(self) -> Command:
+        """Return what the inverter should do now: auto without a plan."""
+        return self.plan[0].command if self.plan else Command.AUTO

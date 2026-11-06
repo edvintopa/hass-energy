@@ -2,7 +2,7 @@
 
 A Home Assistant custom integration that plans home battery charging and discharging from electricity prices (Nordpool) and PV production forecasts.
 
-> **Status:** rebuilt from scratch, step by step. Right now the integration adds one sensor, `sensor.hass_energy_average_consumption_10_days`: the average home consumption per hour (kW) over the last 10 days, computed from the sources set up in the Energy dashboard (grid import + solar + battery discharge − grid export − battery charge).
+> **Status:** rebuilt from scratch, step by step. Right now the integration adds two sensors. `sensor.hass_energy_average_consumption_10_days` is the average home consumption per hour (kW) over the last 10 days, computed from the sources set up in the Energy dashboard (grid import + solar + battery discharge − grid export − battery charge). `sensor.hass_energy_battery_command` is what the battery plan wants the inverter to do now (`auto`, `hold`, `charge` or `discharge`), for your own automations to act on. It's `auto` when there's no plan.
 
 ## Installation
 

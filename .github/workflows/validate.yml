@@ -16,8 +16,9 @@ jobs:
       - uses: home-assistant/actions/hassfest@master
 
   hacs:
-    # The HACS action only validates public repositories.
-    if: ${{ !github.event.repository.private }}
+    # The HACS action only validates public repositories, and it reads the license
+    # from the repository rather than the PR, so it only runs on main.
+    if: ${{ github.ref == 'refs/heads/main' && !github.event.repository.private }}
     runs-on: ubuntu-latest
     steps:
       - uses: hacs/action@main

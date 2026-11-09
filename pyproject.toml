@@ -14,7 +14,7 @@ dev = [
     # The panel depends on frontend, which tests set up. Match the version in
     # homeassistant/components/frontend/manifest.json for the pinned release.
     "home-assistant-frontend==20260930.4",
-    "ruff==0.17.1",
+    "ruff==0.17.4",
 ]
 # Extra packages for running a local dev instance (scripts/develop). Installed by
 # default locally so `uv run` doesn't remove them; CI skips them with --no-group.

@@ -10,7 +10,7 @@ dependencies = []
 [dependency-groups]
 dev = [
     # Pins the matching homeassistant release (currently 2026.10.2).
-    "pytest-homeassistant-custom-component==0.13.373",
+    "pytest-homeassistant-custom-component==0.13.375",
     # The panel depends on frontend, which tests set up. Match the version in
     # homeassistant/components/frontend/manifest.json for the pinned release.
     "home-assistant-frontend==20260930.4",

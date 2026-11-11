@@ -16,8 +16,9 @@ await import(`./energy-chart.js${version}`);
 await import(`./plan-strip.js${version}`);
 
 const DOMAIN = "hass_energy";
-// How often the power lines move their measured/estimated split to now.
-const POWER_SPLIT_INTERVAL = 60000;
+// How often the lines move their measured/estimated split (and, when narrow,
+// where they start) to now.
+const SPLIT_INTERVAL = 60000;
 const QUARTER = 15 * 60000;
 
 // Fetches this integration's `common` strings from translations/<lang>.json
@@ -46,6 +47,11 @@ function measuredPeriods(line, quarter, key) {
   const past = line.periods.filter((period) => period.end <= quarter.start);
   const value = line.now ?? line.periods.find((period) => period.start >= quarter.start)?.[key];
   return value == null ? past : [...past, { ...quarter, [key]: value, estimated: false }];
+}
+
+// The periods that end after `start`, or all of them when it's null.
+function startingAt(periods, start) {
+  return start ? periods.filter((period) => period.end > start) : periods;
 }
 
 class HassEnergyPanel extends HTMLElement {
@@ -163,12 +169,12 @@ class HassEnergyPanel extends HTMLElement {
     if (this._hass) this._subscribe();
     // Now moves on between backend messages, and with it where the measured
     // past ends and the estimates start.
-    this._solarTimer = setInterval(() => this._renderPower(), POWER_SPLIT_INTERVAL);
+    this._splitTimer = setInterval(() => this._renderLines(), SPLIT_INTERVAL);
   }
 
   disconnectedCallback() {
     this._unsubscribe();
-    clearInterval(this._solarTimer);
+    clearInterval(this._splitTimer);
   }
 
   set hass(hass) {
@@ -186,9 +192,15 @@ class HassEnergyPanel extends HTMLElement {
     }
   }
 
+  // A narrow (mobile) view has no room for the past, so its lines start at
+  // the hour that holds now.
   set narrow(narrow) {
     this.toggleAttribute("narrow", narrow);
     this._menuButton.narrow = narrow;
+    if (this._narrow === Boolean(narrow)) return;
+    this._narrow = Boolean(narrow);
+    this._split = undefined;
+    this._renderLines();
   }
 
   async _loadTranslations(hass) {
@@ -239,8 +251,8 @@ class HassEnergyPanel extends HTMLElement {
       for (const [name, now] of Object.entries(message.now)) {
         if (this._measured[name]) this._measured[name].now = now;
       }
-      this._powerSplit = undefined;
-      this._renderPower();
+      this._split = undefined;
+      this._renderLines();
       return;
     }
     const { prices: { area, currency, prices }, solar, measured, plan } = message;
@@ -262,10 +274,6 @@ class HassEnergyPanel extends HTMLElement {
     this._strip.plan = this._plan;
     this._strip.hidden = !this._plan.length;
     this._chart.axis = !this._plan.length;
-    // The lines draw hourly averages and read out these 15-minute periods.
-    this._priceLine.prices = this._prices;
-    // The strip spans the same time as the chart above it.
-    this._strip.range = timeRange(this._prices);
     this._forecast = solar.map(({ start, end, power }) => ({
       start: new Date(start),
       end: new Date(end),
@@ -286,8 +294,8 @@ class HassEnergyPanel extends HTMLElement {
         },
       ])
     );
-    this._powerSplit = undefined;
-    this._renderPower();
+    this._split = undefined;
+    this._renderLines();
     this._renderText();
   }
 
@@ -295,12 +303,21 @@ class HassEnergyPanel extends HTMLElement {
   // shows the value now. After it, solar is the forecast, and battery, grid,
   // home and the battery's charge are what the plan predicts (all estimated,
   // so dashed; the charge halfway through each period). Lines whose sensors
-  // aren't set only have the part after now. Nothing is redrawn until the
-  // split reaches another quarter or new data arrives.
-  _renderPower() {
+  // aren't set only have the part after now. When narrow, every line (and so
+  // the strip's range) starts at the hour that holds now, a whole hour as the
+  // lines draw hourly averages. Nothing is redrawn until the split reaches
+  // another quarter (hours start on one), narrow changes or new data arrives.
+  _renderLines() {
     const split = (Math.floor(Date.now() / QUARTER) + 1) * QUARTER;
-    if (split === this._powerSplit) return;
-    this._powerSplit = split;
+    if (split === this._split) return;
+    this._split = split;
+    const shownFrom = this._narrow ? new Date(split - QUARTER) : null;
+    shownFrom?.setMinutes(0, 0, 0);
+    // The lines draw hourly averages and read out these 15-minute periods.
+    const prices = startingAt(this._prices, shownFrom);
+    this._priceLine.prices = prices;
+    // The strip spans the same time as the chart above it.
+    this._strip.range = timeRange(prices);
     const quarter = { start: new Date(split - QUARTER), end: new Date(split) };
     const forecast = this._forecast
       .filter((period) => period.end > quarter.end)
@@ -309,12 +326,13 @@ class HassEnergyPanel extends HTMLElement {
     const flow = (key) =>
       planned.map(({ start, end, [key]: power }) => ({ start, end, power, estimated: true }));
     const { solar, battery, grid, home, soc } = this._measured;
-    this._solarLine.solar = [...measuredPeriods(solar, quarter, "power"), ...forecast];
-    this._batteryLine.battery = [...measuredPeriods(battery, quarter, "power"), ...flow("battery")];
-    this._gridLine.grid = [...measuredPeriods(grid, quarter, "power"), ...flow("grid")];
-    this._homeLine.home = [...measuredPeriods(home, quarter, "power"), ...flow("home")];
+    const measured = (line, key) => startingAt(measuredPeriods(line, quarter, key), shownFrom);
+    this._solarLine.solar = [...measured(solar, "power"), ...forecast];
+    this._batteryLine.battery = [...measured(battery, "power"), ...flow("battery")];
+    this._gridLine.grid = [...measured(grid, "power"), ...flow("grid")];
+    this._homeLine.home = [...measured(home, "power"), ...flow("home")];
     this._socLine.soc = [
-      ...measuredPeriods(soc, quarter, "soc"),
+      ...measured(soc, "soc"),
       ...planned.map(({ start, end, soc_start, soc_end }) => ({
         start,
         end,

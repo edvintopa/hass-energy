@@ -8,7 +8,7 @@
 
 // Import siblings with this module's ?v=<hash of the files>, like the panel.
 const version = new URL(import.meta.url).search;
-const { svgEl } = await import(`./timeline.js${version}`);
+const { hourStart, svgEl } = await import(`./timeline.js${version}`);
 
 /**
  * Base for the chart's lines. Subclasses set `name`, `style` and `valueKeys`
@@ -77,8 +77,7 @@ const HOUR = 3600000;
 export function hourlyAverages(periods, keys) {
   const hours = new Map();
   for (const period of periods) {
-    const start = period.start;
-    const key = start.getTime() - (start.getMinutes() * 60000 + start.getSeconds() * 1000 + start.getMilliseconds());
+    const key = hourStart(period.start).getTime();
     if (!hours.has(key)) hours.set(key, []);
     hours.get(key).push(period);
   }

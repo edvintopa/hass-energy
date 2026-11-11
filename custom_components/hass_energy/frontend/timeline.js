@@ -62,6 +62,17 @@ export function timeRange(periods) {
 }
 
 /**
+ * The start of the local hour that holds `date` (also in half-hour time
+ * zones). It's taken back from the instant rather than set on the clock, so
+ * in the hour repeated when clocks go back it stays in the right one.
+ */
+export function hourStart(date) {
+  return new Date(
+    date.getTime() - (date.getMinutes() * 60000 + date.getSeconds() * 1000 + date.getMilliseconds())
+  );
+}
+
+/**
  * Maps a time to x over `range` ({ start, end }), kept inside `width`.
  * `.invert(x)` maps back to a time.
  */
